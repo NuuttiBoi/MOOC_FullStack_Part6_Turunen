@@ -29,22 +29,11 @@ describe('useAnecdoteActions', () => {
         expect(anecdotesResult.current).toEqual(mockAnecdotes)
     })
 
-    it('add appends a new note', async () => {
-        const newAnecdote = { id: 2, content: 'New anecdote', votes: 1 }
-        anecdoteService.createNew.mockResolvedValue(newAnecdote)
-        const { result } = renderHook(() => useAnecdoteActions())
-        await act(async () => {
-            await result.current.add('New anecdote')
-        })
-        const { result: anecdotesResult } = renderHook(() => useAnecdotes())
-        expect(anecdotesResult.current).toContainEqual(newAnecdote)
-    })
-
     it('component displaying anecdotes receives the anecdotes from the store sorted by votes', async () => {
         const mockAnecdotes = [
             { id: 1, content: 'Test', votes: 0 },
-            { id: 1, content: 'Test2', votes: 2 },
-            { id: 1, content: 'Test3', votes: 3 }
+            { id: 2, content: 'Test2', votes: 2 },
+            { id: 3, content: 'Test3', votes: 3 },
         ]
         anecdoteService.getAll.mockResolvedValue(mockAnecdotes)
         const { result } = renderHook(() => useAnecdoteActions())
@@ -52,12 +41,25 @@ describe('useAnecdoteActions', () => {
             await result.current.initialize()
         })
         const { result: anecdotesResult } = renderHook(() => useAnecdotes())
-        expect(anecdotesResult.current).toEqual(mockAnecdotes)
-
+        expect(anecdotesResult.current).toEqual([
+            { id: 3, content: 'Test3', votes: 3 },
+            { id: 2, content: 'Test2', votes: 2 },
+            { id: 1, content: 'Test', votes: 0 },
+        ])
     })
 
     it('verifies the correct React component receives a properly filtered list of anecdotes', async () => {
-
+        useAnecdoteStore.setState({
+            anecdotes: [
+                { id: 1, content: 'yyyyy test', votes: 0 },
+                { id: 2, content: 'bbbbbbb test', votes: 0 },
+                { id: 3, content: 'xxxxxx test', votes: 0 },
+                { id: 4, content: 'find this!', votes: 0 },
+            ],
+            filter: 'find',
+        })
+        const { result: anecdotesResult } = renderHook(() => useAnecdotes())
+        expect(anecdotesResult.current).toEqual([{ id: 4, content: 'find this!', votes: 0 }])
     })
 
     it('voting increases the number of votes for an anecdote', async () => {

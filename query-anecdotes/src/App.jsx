@@ -1,48 +1,21 @@
 import AnecdoteForm from './components/AnecdoteForm'
 import Notification from './components/Notification'
-import { useQuery } from '@tanstack/react-query'
-
+import {useAnecdotes} from "./hooks/useAnecdotes.js";
 const App = () => {
-  const handleVote = (anecdote) => {
-    console.log('vote')
+  const {anecdotes, isPending, isError, addAnecdote, handleVote } = useAnecdotes()
+
+  if (isPending) {
+    return <div>loading data...</div>
   }
-
-  const result = useQuery({
-    queryKey: ['anecdotes'],
-    queryFn: async () => {
-      const response = await fetch('http://localhost:3001/anecdotes')
-      if (!response.ok) {
-        throw new Error('Failed to fetch the anecdotes')
-      }
-      return await response.json()
-    },
-    retry: 'false'
-  })
-
-  console.log(JSON.parse(JSON.stringify(result)))
-
-  if (result.isPending) {
+  if (isError) {
     return <div>error loading anecdote data from the server</div>
   }
-
-  const anecdotes = result.data
-
-  /*
-  const anecdotes = [
-    {
-      content: 'If it hurts, do it more often',
-      id: '47145',
-      votes: 0,
-    },
-  ]
-   */
-
   return (
     <div>
       <h3>Anecdote app</h3>
 
       <Notification />
-      <AnecdoteForm />
+      <AnecdoteForm addAnecdote={addAnecdote} />
 
       {anecdotes.map((anecdote) => (
         <div key={anecdote.id}>

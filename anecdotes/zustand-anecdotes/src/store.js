@@ -65,10 +65,11 @@ export const useAnecdoteActions = () => useAnecdoteStore((state) => state.action
 export const useAnecdotes = () => {
   const anecdotes = useAnecdoteStore((state) => state.anecdotes)
   const filter = useAnecdoteStore((state) => state.filter)
+  const anecdotesSorted = [...anecdotes].sort((a, b) => b.votes - a.votes)
   if(filter === 'all'){
-    return anecdotes
+    return anecdotesSorted
   } else {
-    return anecdotes.filter(a =>
+    return anecdotesSorted.filter(a =>
         a.content.toLowerCase().includes(filter.toLowerCase())
     )
   }
