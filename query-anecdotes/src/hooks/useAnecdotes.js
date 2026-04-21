@@ -1,13 +1,13 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getAnecdotes, createAnecdote } from '../service/requests'
 import {updateAnecdote} from "../service/requests.js";
-import NotificationContext from '../NotificationContext'
 import {useContext} from "react";
+import useNotify from "./useNotify.js"
 
 
 export const useAnecdotes = () => {
     const queryClient = useQueryClient()
-    const { showNotification } = useContext(NotificationContext)
+    const notification = useNotify()
 
     const result = useQuery({
         queryKey: ['anecdotes'],
@@ -19,15 +19,18 @@ export const useAnecdotes = () => {
         mutationFn: createAnecdote,
         onSuccess: (newAnecdote) => {
             queryClient.invalidateQueries({ queryKey: ['anecdotes'] })
-            showNotification(`you created '${newAnecdote.content}'`)
+            notification(`you created '${newAnecdote.content}'`)
         },
+        onError: () => {
+            notification('the anecdote must be at least 5 characters long')
+        }
     })
 
     const updateAnecdoteMutation = useMutation({
         mutationFn: updateAnecdote,
         onSuccess: (updatedAnecdote) => {
             queryClient.invalidateQueries({ queryKey: ['anecdotes'] })
-            showNotification(`you voted '${updatedAnecdote.content}'`)
+            notification(`you voted '${updatedAnecdote.content}'`)
         }
     })
 
